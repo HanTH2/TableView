@@ -204,7 +204,7 @@ public class TableViewListener implements ITableViewListener {
     /**
      * Called when user long press any row header item.
      *
-     * @param rowHeaderView : Long Pressed Row Header ViewHolder.
+     * @param rowEndView : Long Pressed Row Header ViewHolder.
      * @param row           : Y (Row) position of Long Pressed Row Header item.
      */
     @Override

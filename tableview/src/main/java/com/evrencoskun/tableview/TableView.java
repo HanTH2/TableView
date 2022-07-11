@@ -244,6 +244,8 @@ public class TableView extends FrameLayout implements ITableView {
                     mAllowClickInsideCell);
             mAllowClickInsideRowHeader = a.getBoolean(R.styleable.TableView_allow_click_inside_row_header,
                     mAllowClickInsideRowHeader);
+            mAllowClickInsideRowEnd = a.getBoolean(R.styleable.TableView_allow_click_inside_row_end,
+                    mAllowClickInsideRowEnd);
             mAllowClickInsideColumnHeader = a.getBoolean(R.styleable.TableView_allow_click_inside_column_header,
                     mAllowClickInsideColumnHeader);
 

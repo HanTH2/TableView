@@ -66,4 +66,16 @@ public abstract class SimpleTableViewListener implements ITableViewListener {
 	@Override
 	public void onRowHeaderLongPressed(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
 	}
+
+	@Override
+	public void onRowEndClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
+	}
+
+	@Override
+	public void onRowEndDoubleClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
+	}
+
+	@Override
+	public void onRowEndLongPressed(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
+	}
 }
