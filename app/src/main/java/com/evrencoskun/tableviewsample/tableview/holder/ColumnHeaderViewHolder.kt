@@ -1,4 +1,4 @@
-package com.evrencoskun.tableviewsample.tableview.holder1
+package com.evrencoskun.tableviewsample.tableview.holder
 
 import android.util.Log
 import android.view.View

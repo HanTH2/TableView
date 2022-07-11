@@ -1,4 +1,4 @@
-package com.evrencoskun.tableviewsample.tableview.holder1
+package com.evrencoskun.tableviewsample.tableview.holder
 
 import android.view.View
 import android.widget.LinearLayout
