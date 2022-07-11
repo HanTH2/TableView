@@ -37,11 +37,13 @@ import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
  * Created by evrencoskun on 10/06/2017.
  */
 
-public interface ITableAdapter<CH, RH, C> {
+public interface ITableAdapter<CH, RH, RE, C> {
 
     int getColumnHeaderItemViewType(int position);
 
     int getRowHeaderItemViewType(int position);
+
+    int getRowEndItemViewType(int position);
 
     int getCellItemViewType(int position);
 
@@ -63,7 +65,15 @@ public interface ITableAdapter<CH, RH, C> {
     void onBindRowHeaderViewHolder(@NonNull AbstractViewHolder holder, @Nullable RH rowHeaderItemModel, int rowPosition);
 
     @NonNull
+    AbstractViewHolder onCreateRowEndViewHolder(@NonNull ViewGroup parent, int viewType);
+
+    void onBindRowEndViewHolder(@NonNull AbstractViewHolder holder, @Nullable RE rowHeaderItemModel, int rowPosition);
+
+    @NonNull
     View onCreateCornerView(@NonNull ViewGroup parent);
+
+    @NonNull
+    View onCreateCornerEndView(@NonNull ViewGroup parent);
 
     ITableView getTableView();
 
@@ -72,5 +82,5 @@ public interface ITableAdapter<CH, RH, C> {
      *
      * @param listener The AdapterDataSetChangedListener listener.
      */
-    void addAdapterDataSetChangedListener(@NonNull AdapterDataSetChangedListener<CH, RH, C> listener);
+    void addAdapterDataSetChangedListener(@NonNull AdapterDataSetChangedListener<CH, RH, RE, C> listener);
 }

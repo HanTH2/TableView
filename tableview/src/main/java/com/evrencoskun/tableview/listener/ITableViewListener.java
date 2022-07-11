@@ -58,4 +58,11 @@ public interface ITableViewListener {
     void onRowHeaderLongPressed(@NonNull RecyclerView.ViewHolder rowHeaderView, int
             row);
 
+    void onRowEndClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row);
+
+    void onRowEndDoubleClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row);
+
+    void onRowEndLongPressed(@NonNull RecyclerView.ViewHolder rowHeaderView, int
+            row);
+
 }

@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 import com.evrencoskun.tableviewsample.R;
 import com.evrencoskun.tableviewsample.tableview.model.Cell;
 import com.evrencoskun.tableviewsample.tableview.model.ColumnHeader;
+import com.evrencoskun.tableviewsample.tableview.model.RowEnd;
 import com.evrencoskun.tableviewsample.tableview.model.RowHeader;
 
 import java.util.ArrayList;
@@ -43,24 +44,17 @@ import java.util.Random;
 public class TableViewModel {
 
     // Columns indexes
-    public static final int MOOD_COLUMN_INDEX = 3;
-    public static final int GENDER_COLUMN_INDEX = 4;
+    public static final int MOOD_COLUMN_INDEX = 9;
 
     // Constant values for icons
     public static final int SAD = 1;
     public static final int HAPPY = 2;
-    public static final int BOY = 1;
-    public static final int GIRL = 2;
 
     // Constant size for dummy data sets
-    private static final int COLUMN_SIZE = 500;
-    private static final int ROW_SIZE = 500;
+    private static final int COLUMN_SIZE = 10;
+    private static final int ROW_SIZE = 30;
 
     // Drawables
-    @DrawableRes
-    private final int mBoyDrawable;
-    @DrawableRes
-    private final int mGirlDrawable;
     @DrawableRes
     private final int mHappyDrawable;
     @DrawableRes
@@ -68,8 +62,6 @@ public class TableViewModel {
 
     public TableViewModel() {
         // initialize drawables
-        mBoyDrawable = R.drawable.ic_male;
-        mGirlDrawable = R.drawable.ic_female;
         mHappyDrawable = R.drawable.ic_happy;
         mSadDrawable = R.drawable.ic_sad;
     }
@@ -80,6 +72,17 @@ public class TableViewModel {
         for (int i = 0; i < ROW_SIZE; i++) {
             RowHeader header = new RowHeader(String.valueOf(i), "row " + i);
             list.add(header);
+        }
+
+        return list;
+    }
+
+    @NonNull
+    private List<RowEnd> getSimpleRowEndList() {
+        List<RowEnd> list = new ArrayList<>();
+        for (int i = 0; i < ROW_SIZE; i++) {
+            RowEnd end = new RowEnd(String.valueOf(i), "End " + i);
+            list.add(end);
         }
 
         return list;
@@ -124,8 +127,6 @@ public class TableViewModel {
                     text = random;
                 } else if (j == MOOD_COLUMN_INDEX) {
                     text = random % 2 == 0 ? HAPPY : SAD;
-                } else if (j == GENDER_COLUMN_INDEX) {
-                    text = random % 2 == 0 ? BOY : GIRL;
                 }
 
                 // Create dummy id.
@@ -151,11 +152,11 @@ public class TableViewModel {
 
     @DrawableRes
     public int getDrawable(int value, boolean isGender) {
-        if (isGender) {
-            return value == BOY ? mBoyDrawable : mGirlDrawable;
-        } else {
+//        if (isGender) {
+//            return value == BOY ? mBoyDrawable : mGirlDrawable;
+//        } else {
             return value == SAD ? mSadDrawable : mHappyDrawable;
-        }
+//        }
     }
 
     @NonNull
@@ -166,6 +167,11 @@ public class TableViewModel {
     @NonNull
     public List<RowHeader> getRowHeaderList() {
         return getSimpleRowHeaderList();
+    }
+
+    @NonNull
+    public List<RowEnd> getRowEndList() {
+        return getSimpleRowEndList();
     }
 
     @NonNull

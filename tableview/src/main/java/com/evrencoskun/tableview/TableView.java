@@ -31,6 +31,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -50,6 +51,7 @@ import com.evrencoskun.tableview.layoutmanager.ColumnHeaderLayoutManager;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.evrencoskun.tableview.listener.TableViewLayoutChangeListener;
 import com.evrencoskun.tableview.listener.itemclick.ColumnHeaderRecyclerViewItemClickListener;
+import com.evrencoskun.tableview.listener.itemclick.RowEndRecyclerViewItemClickListener;
 import com.evrencoskun.tableview.listener.itemclick.RowHeaderRecyclerViewItemClickListener;
 import com.evrencoskun.tableview.listener.scroll.HorizontalRecyclerViewListener;
 import com.evrencoskun.tableview.listener.scroll.VerticalRecyclerViewListener;
@@ -75,6 +77,8 @@ public class TableView extends FrameLayout implements ITableView {
     protected CellRecyclerView mColumnHeaderRecyclerView;
     @NonNull
     protected CellRecyclerView mRowHeaderRecyclerView;
+    @NonNull
+    protected CellRecyclerView mRowEndRecyclerView;
     @Nullable
     protected AbstractTableAdapter mTableAdapter;
     @Nullable
@@ -87,6 +91,8 @@ public class TableView extends FrameLayout implements ITableView {
     private ColumnHeaderLayoutManager mColumnHeaderLayoutManager;
     @NonNull
     private LinearLayoutManager mRowHeaderLayoutManager;
+    @NonNull
+    private LinearLayoutManager mRowEndLayoutManager;
     @NonNull
     private CellLayoutManager mCellLayoutManager;
     @NonNull
@@ -109,6 +115,7 @@ public class TableView extends FrameLayout implements ITableView {
     private ColumnWidthHandler mColumnWidthHandler;
 
     private int mRowHeaderWidth;
+    private int mRowEndWidth;
     private int mColumnHeaderHeight;
 
     private int mSelectedColor;
@@ -122,11 +129,16 @@ public class TableView extends FrameLayout implements ITableView {
     private boolean mShowVerticalSeparators = true;
     private boolean mAllowClickInsideCell = false;
     private boolean mAllowClickInsideRowHeader = false;
+    private boolean mAllowClickInsideRowEnd = false;
     private boolean mAllowClickInsideColumnHeader = false;
     private boolean mIsSortable;
     private boolean mShowCornerView = false;
+    private boolean mShowCornerEndView = false;
 
     private CornerViewLocation mCornerViewLocation;
+
+    private CornerViewLocation mCornerViewEndLocation;
+
 
     private boolean mReverseLayout = false;
 
@@ -169,11 +181,15 @@ public class TableView extends FrameLayout implements ITableView {
     private void initialDefaultValues(@Nullable AttributeSet attrs) {
         // Dimensions
         mRowHeaderWidth = (int) getResources().getDimension(R.dimen.default_row_header_width);
+        mRowEndWidth = (int) getResources().getDimension(R.dimen.default_row_end_width);
         mColumnHeaderHeight = (int) getResources().getDimension(R.dimen
                 .default_column_header_height);
 
         // Cornerview location
         mCornerViewLocation = ITableView.CornerViewLocation.TOP_LEFT;
+
+        // Cornerview location
+        mCornerViewEndLocation = ITableView.CornerViewLocation.TOP_RIGHT;
 
         // Reverse Layout
         mReverseLayout = false;
@@ -198,11 +214,16 @@ public class TableView extends FrameLayout implements ITableView {
             // Dimensions
             mRowHeaderWidth = (int) a.getDimension(R.styleable.TableView_row_header_width,
                     mRowHeaderWidth);
+            mRowEndWidth = (int) a.getDimension(R.styleable.TableView_row_end_width,
+                    mRowEndWidth);
             mColumnHeaderHeight = (int) a.getDimension(R.styleable
                     .TableView_column_header_height, mColumnHeaderHeight);
 
             // CornerView location
             mCornerViewLocation = CornerViewLocation.fromId(a.getInt(R.styleable.TableView_corner_view_location, 0));
+
+            // CornerView location
+            mCornerViewEndLocation = CornerViewLocation.fromId(a.getInt(R.styleable.TableView_corner_view_location, 0));
 
             // Reverse Layout
             mReverseLayout = a.getBoolean(R.styleable.TableView_reverse_layout, mReverseLayout);
@@ -242,16 +263,19 @@ public class TableView extends FrameLayout implements ITableView {
         // Create Views
         mColumnHeaderRecyclerView = createColumnHeaderRecyclerView();
         mRowHeaderRecyclerView = createRowHeaderRecyclerView();
+        mRowEndRecyclerView = createRowEndRecyclerView();
         mCellRecyclerView = createCellRecyclerView();
 
         // Set some Id to help in identification
         mColumnHeaderRecyclerView.setId(R.id.ColumnHeaderRecyclerView);
         mRowHeaderRecyclerView.setId(R.id.RowHeaderRecyclerView);
+        mRowEndRecyclerView.setId(R.id.RowEndRecyclerView);
         mCellRecyclerView.setId(R.id.CellRecyclerView);
 
         // Add Views
         addView(mColumnHeaderRecyclerView);
         addView(mRowHeaderRecyclerView);
+        addView(mRowEndRecyclerView);
         addView(mCellRecyclerView);
 
         // Create Handlers
@@ -272,6 +296,7 @@ public class TableView extends FrameLayout implements ITableView {
 
         // Set this listener both of Cell RecyclerView and RowHeader RecyclerView
         mRowHeaderRecyclerView.addOnItemTouchListener(mVerticalRecyclerListener);
+        mRowEndRecyclerView.addOnItemTouchListener(mVerticalRecyclerListener);
         mCellRecyclerView.addOnItemTouchListener(mVerticalRecyclerListener);
 
         // It handles Horizontal scroll listener
@@ -297,6 +322,13 @@ public class TableView extends FrameLayout implements ITableView {
             mRowHeaderRecyclerView.addOnItemTouchListener(rowHeaderRecyclerViewItemClickListener);
         }
 
+        // Add item click listener for row end recyclerView
+        if (mAllowClickInsideRowEnd) {
+            RowEndRecyclerViewItemClickListener rowEndRecyclerViewItemClickListener = new RowEndRecyclerViewItemClickListener
+                    (mRowEndRecyclerView, this);
+            mRowEndRecyclerView.addOnItemTouchListener(rowEndRecyclerViewItemClickListener);
+        }
+
 
         // Add Layout change listener both of Column Header  & Cell recyclerView to detect
         // changing size
@@ -319,11 +351,11 @@ public class TableView extends FrameLayout implements ITableView {
         LayoutParams layoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
                 mColumnHeaderHeight, getGravity());
         // If the corner is on the right the margin needs to be on the right
-        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
-            layoutParams.rightMargin = mRowHeaderWidth;
-        } else {
+//        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
+            layoutParams.rightMargin = mRowEndWidth;
+//        } else {
             layoutParams.leftMargin = mRowHeaderWidth;
-        }
+//        }
 
         recyclerView.setLayoutParams(layoutParams);
 
@@ -362,6 +394,32 @@ public class TableView extends FrameLayout implements ITableView {
     }
 
     @NonNull
+    protected CellRecyclerView createRowEndRecyclerView() {
+        CellRecyclerView recyclerView = new CellRecyclerView(getContext());
+
+        // Set layout manager
+        recyclerView.setLayoutManager(getRowEndLayoutManager());
+
+        // Set layout params
+        LayoutParams layoutParams = new LayoutParams(mRowEndWidth, LayoutParams.WRAP_CONTENT, getGravityEnd());
+        // If the corner is on the bottom the margin needs to be on the bottom
+        if (mCornerViewLocation == CornerViewLocation.BOTTOM_LEFT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
+            layoutParams.bottomMargin = mColumnHeaderHeight;
+        } else {
+            layoutParams.topMargin = mColumnHeaderHeight;
+        }
+        recyclerView.setLayoutParams(layoutParams);
+
+
+        if (isShowVerticalSeparators()) {
+            // Add vertical item decoration to display row line
+            recyclerView.addItemDecoration(getVerticalItemDecoration());
+        }
+
+        return recyclerView;
+    }
+
+    @NonNull
     protected CellRecyclerView createCellRecyclerView() {
         CellRecyclerView recyclerView = new CellRecyclerView(getContext());
 
@@ -375,11 +433,11 @@ public class TableView extends FrameLayout implements ITableView {
         LayoutParams layoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams
                 .WRAP_CONTENT, getGravity());
         // If the corner is on the right the margin needs to be on the right
-        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
-            layoutParams.rightMargin = mRowHeaderWidth;
-        } else {
+//        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
+            layoutParams.rightMargin = mRowEndWidth;
+//        } else {
             layoutParams.leftMargin = mRowHeaderWidth;
-        }
+//        }
         // If the corner is on the bottom the margin needs to be on the bottom
         if (mCornerViewLocation == CornerViewLocation.BOTTOM_LEFT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
             layoutParams.bottomMargin = mColumnHeaderHeight;
@@ -396,16 +454,18 @@ public class TableView extends FrameLayout implements ITableView {
         return recyclerView;
     }
 
-    public <CH, RH, C> void setAdapter(@Nullable AbstractTableAdapter<CH, RH, C> tableAdapter) {
+    public <CH, RH, RE, C> void setAdapter(@Nullable AbstractTableAdapter<CH, RH, RE, C> tableAdapter) {
         if (tableAdapter != null) {
             this.mTableAdapter = tableAdapter;
             this.mTableAdapter.setRowHeaderWidth(mRowHeaderWidth);
+            this.mTableAdapter.setRowEndWidth(mRowEndWidth);
             this.mTableAdapter.setColumnHeaderHeight(mColumnHeaderHeight);
             this.mTableAdapter.setTableView(this);
 
             // set adapters
             mColumnHeaderRecyclerView.setAdapter(mTableAdapter.getColumnHeaderRecyclerViewAdapter());
             mRowHeaderRecyclerView.setAdapter(mTableAdapter.getRowHeaderRecyclerViewAdapter());
+            mRowEndRecyclerView.setAdapter(mTableAdapter.getRowEndRecyclerViewAdapter());
             mCellRecyclerView.setAdapter(mTableAdapter.getCellRecyclerViewAdapter());
 
             // Create Sort Handler
@@ -415,6 +475,7 @@ public class TableView extends FrameLayout implements ITableView {
             mFilterHandler = new FilterHandler<>(this);
         }
     }
+
 
     @Override
     public boolean hasFixedWidth() {
@@ -485,6 +546,12 @@ public class TableView extends FrameLayout implements ITableView {
 
     @NonNull
     @Override
+    public CellRecyclerView getRowEndRecyclerView() {
+        return mRowEndRecyclerView;
+    }
+
+    @NonNull
+    @Override
     public ColumnHeaderLayoutManager getColumnHeaderLayoutManager() {
         if (mColumnHeaderLayoutManager == null) {
             mColumnHeaderLayoutManager = new ColumnHeaderLayoutManager(getContext(), this);
@@ -510,6 +577,16 @@ public class TableView extends FrameLayout implements ITableView {
                     .VERTICAL, false);
         }
         return mRowHeaderLayoutManager;
+    }
+
+    @NonNull
+    @Override
+    public LinearLayoutManager getRowEndLayoutManager() {
+        if (mRowEndLayoutManager == null) {
+            mRowEndLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager
+                    .VERTICAL, false);
+        }
+        return mRowEndLayoutManager;
     }
 
     @NonNull
@@ -547,6 +624,12 @@ public class TableView extends FrameLayout implements ITableView {
     }
 
     @Override
+    public void sortRowEnd(@NonNull SortState sortState) {
+        mIsSortable = true;
+        mColumnSortHandler.sortByRowEnd(sortState);
+    }
+
+    @Override
     public void remeasureColumnWidth(int column) {
         // Remove calculated width value to be ready for recalculation.
         getColumnHeaderLayoutManager().removeCachedWidth(column);
@@ -581,6 +664,12 @@ public class TableView extends FrameLayout implements ITableView {
     @Override
     public SortState getRowHeaderSortingStatus() {
         return mColumnSortHandler.getRowHeaderSortingStatus();
+    }
+
+    @Nullable
+    @Override
+    public SortState getRowEndSortingStatus() {
+        return mColumnSortHandler.getRowEndSortingStatus();
     }
 
     @Override
@@ -811,6 +900,16 @@ public class TableView extends FrameLayout implements ITableView {
     }
 
     /**
+     * get row end width
+     *
+     * @return size in pixel
+     */
+    @Override
+    public int getRowEndWidth() {
+        return mRowEndWidth;
+    }
+
+    /**
      * set RowHeaderWidth
      *
      * @param rowHeaderWidth in pixel
@@ -852,6 +951,48 @@ public class TableView extends FrameLayout implements ITableView {
         }
     }
 
+    /**
+     * set RowHeaderWidth
+     *
+     * @param rowEndWidth in pixel
+     */
+    @Override
+    public void setRowEndWidth(int rowEndWidth) {
+        this.mRowEndWidth = rowEndWidth;
+
+        // Update RowHeader layout width
+        ViewGroup.LayoutParams layoutParamsRow = mRowEndRecyclerView.getLayoutParams();
+        layoutParamsRow.width = rowEndWidth;
+        mRowEndRecyclerView.setLayoutParams(layoutParamsRow);
+        mRowEndRecyclerView.requestLayout();
+
+        // Update ColumnHeader left margin
+        LayoutParams layoutParamsColumn = (LayoutParams) mColumnHeaderRecyclerView.getLayoutParams();
+        // If the corner is on the right the margin needs to be on the right
+        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
+            layoutParamsColumn.rightMargin = rowEndWidth;
+        } else {
+            layoutParamsColumn.leftMargin = rowEndWidth;
+        }
+        mColumnHeaderRecyclerView.setLayoutParams(layoutParamsColumn);
+        mColumnHeaderRecyclerView.requestLayout();
+
+        // Update Cells left margin
+        LayoutParams layoutParamsCell = (LayoutParams) mCellRecyclerView.getLayoutParams();
+        if (mCornerViewLocation == CornerViewLocation.TOP_RIGHT || mCornerViewLocation == CornerViewLocation.BOTTOM_RIGHT) {
+            layoutParamsCell.rightMargin = rowEndWidth;
+        } else {
+            layoutParamsCell.leftMargin = rowEndWidth;
+        }
+        mCellRecyclerView.setLayoutParams(layoutParamsCell);
+        mCellRecyclerView.requestLayout();
+
+        if (getAdapter() != null) {
+            // update CornerView size
+            getAdapter().setRowEndWidth(rowEndWidth);
+        }
+    }
+
     public void setColumnWidth(int columnPosition, int width) {
         mColumnWidthHandler.setColumnWidth(columnPosition, width);
     }
@@ -862,6 +1003,10 @@ public class TableView extends FrameLayout implements ITableView {
 
     public boolean getShowCornerView(){
         return mShowCornerView;
+    }
+
+    public boolean getShowCornerEndView() {
+        return mShowCornerEndView;
     }
 
     public CornerViewLocation getCornerViewLocation() { return mCornerViewLocation; }
@@ -891,6 +1036,28 @@ public class TableView extends FrameLayout implements ITableView {
                 break;
         }
         return gravity;
+    }
+
+    public int getGravityEnd() {
+//        int gravity;
+//        switch (mCornerViewEndLocation) {
+//            case TOP_LEFT:
+//                gravity = Gravity.TOP|Gravity.LEFT;
+//                break;
+//            case TOP_RIGHT:
+//                gravity = Gravity.TOP|Gravity.RIGHT;
+//                break;
+//            case BOTTOM_LEFT:
+//                gravity = Gravity.BOTTOM|Gravity.LEFT;
+//                break;
+//            case BOTTOM_RIGHT:
+//                gravity = Gravity.BOTTOM|Gravity.RIGHT;
+//                break;
+//            default:
+//                gravity = Gravity.TOP|Gravity.LEFT;
+//                break;
+//        }
+        return Gravity.TOP|Gravity.RIGHT;
     }
 
     public boolean getReverseLayout(){ return mReverseLayout;}

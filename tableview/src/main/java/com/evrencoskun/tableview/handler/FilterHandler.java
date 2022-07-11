@@ -45,6 +45,7 @@ public class FilterHandler<T extends IFilterableModel> {
     private final RowHeaderRecyclerViewAdapter<T> mRowHeaderRecyclerViewAdapter;
     private List<List<T>> originalCellDataStore;
     private List<T> originalRowDataStore;
+    private List<T> originalRowEndDataStore;
 
     private List<FilterChangedListener<T>> filterChangedListeners;
 
@@ -58,19 +59,22 @@ public class FilterHandler<T extends IFilterableModel> {
     }
 
     public void filter(@NonNull Filter filter) {
-        if (originalCellDataStore == null || originalRowDataStore == null) {
+        if (originalCellDataStore == null || originalRowDataStore == null || originalRowEndDataStore == null) {
             return;
         }
 
         List<List<T>> originalCellData = new ArrayList<>(originalCellDataStore);
         List<T> originalRowData = new ArrayList<>(originalRowDataStore);
+        List<T> originalRowEndData = new ArrayList<>(originalRowEndDataStore);
         List<List<T>> filteredCellList = new ArrayList<>();
         List<T> filteredRowList = new ArrayList<>();
+        List<T> filteredRowEndList = new ArrayList<>();
 
         if (filter.getFilterItems().isEmpty()) {
             filteredCellList = new ArrayList<>(originalCellDataStore);
             filteredRowList = new ArrayList<>(originalRowDataStore);
-            dispatchFilterClearedToListeners(originalCellDataStore, originalRowDataStore);
+            filteredRowEndList = new ArrayList<>(originalRowEndDataStore);
+            dispatchFilterClearedToListeners(originalCellDataStore, originalRowDataStore, originalRowEndDataStore);
         } else {
             for (int x = 0; x < filter.getFilterItems().size(); ) {
                 final FilterItem filterItem = filter.getFilterItems().get(x);
@@ -85,6 +89,7 @@ public class FilterHandler<T extends IFilterableModel> {
                                             .toLowerCase())) {
                                 filteredCellList.add(itemsList);
                                 filteredRowList.add(originalRowData.get(filteredCellList.indexOf(itemsList)));
+                                filteredRowEndList.add(originalRowEndData.get(filteredCellList.indexOf(itemsList)));
                                 break;
                             }
                         }
@@ -101,6 +106,7 @@ public class FilterHandler<T extends IFilterableModel> {
                                         .toLowerCase())) {
                             filteredCellList.add(itemsList);
                             filteredRowList.add(originalRowData.get(filteredCellList.indexOf(itemsList)));
+                            filteredRowEndList.add(originalRowEndData.get(filteredCellList.indexOf(itemsList)));
                         }
                     }
                 }
@@ -109,8 +115,10 @@ public class FilterHandler<T extends IFilterableModel> {
                 if (++x < filter.getFilterItems().size()) {
                     originalCellData = new ArrayList<>(filteredCellList);
                     originalRowData = new ArrayList<>(filteredRowList);
+                    originalRowEndData = new ArrayList<>(filteredRowEndList);
                     filteredCellList.clear();
                     filteredRowList.clear();
+                    filteredRowEndList.clear();
                 }
             }
         }
@@ -136,6 +144,11 @@ public class FilterHandler<T extends IFilterableModel> {
                 public void onCellItemsChanged(@NonNull List cellItems) {
                     originalCellDataStore = new ArrayList<>(cellItems);
                 }
+
+                @Override
+                public void onRowEndItemsChanged(@NonNull List rowEndItems) {
+                    originalRowEndDataStore = new ArrayList<>(rowEndItems);
+                }
             };
 
     private void dispatchFilterChangedToListeners(
@@ -151,7 +164,8 @@ public class FilterHandler<T extends IFilterableModel> {
 
     private void dispatchFilterClearedToListeners(
             @NonNull List<List<T>> originalCellItems,
-            @NonNull List<T> originalRowHeaderItems
+            @NonNull List<T> originalRowHeaderItems,
+            @NonNull List<T> originalRowEndItems
     ) {
         if (filterChangedListeners != null) {
             for (FilterChangedListener<T> listener : filterChangedListeners) {

@@ -38,11 +38,12 @@ import com.evrencoskun.tableview.sort.SortState;
 import com.evrencoskun.tableviewsample.R;
 import com.evrencoskun.tableviewsample.tableview.holder.CellViewHolder;
 import com.evrencoskun.tableviewsample.tableview.holder.ColumnHeaderViewHolder;
-import com.evrencoskun.tableviewsample.tableview.holder.GenderCellViewHolder;
 import com.evrencoskun.tableviewsample.tableview.holder.MoodCellViewHolder;
+import com.evrencoskun.tableviewsample.tableview.holder.RowEndViewHolder;
 import com.evrencoskun.tableviewsample.tableview.holder.RowHeaderViewHolder;
 import com.evrencoskun.tableviewsample.tableview.model.Cell;
 import com.evrencoskun.tableviewsample.tableview.model.ColumnHeader;
+import com.evrencoskun.tableviewsample.tableview.model.RowEnd;
 import com.evrencoskun.tableviewsample.tableview.model.RowHeader;
 
 /**
@@ -51,11 +52,10 @@ import com.evrencoskun.tableviewsample.tableview.model.RowHeader;
  * This is a sample of custom TableView Adapter.
  */
 
-public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHeader, Cell> {
+public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHeader, RowEnd, Cell> {
 
     // Cell View Types by Column Position
     private static final int MOOD_CELL_TYPE = 1;
-    private static final int GENDER_CELL_TYPE = 2;
     // add new one if it necessary..
 
     private static final String LOG_TAG = TableViewAdapter.class.getSimpleName();
@@ -91,11 +91,6 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
                 layout = inflater.inflate(R.layout.table_view_image_cell_layout, parent, false);
 
                 return new MoodCellViewHolder(layout);
-            case GENDER_CELL_TYPE:
-                // Get image cell layout which has ImageView instead of TextView.
-                layout = inflater.inflate(R.layout.table_view_image_cell_layout, parent, false);
-
-                return new GenderCellViewHolder(layout);
             default:
                 // For cells that display a text
                 layout = inflater.inflate(R.layout.table_view_cell_layout, parent, false);
@@ -129,12 +124,6 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
 
                 moodViewHolder.cell_image.setImageResource(mTableViewModel.getDrawable((int) cellItemModel
                         .getData(), false));
-                break;
-            case GENDER_CELL_TYPE:
-                GenderCellViewHolder genderViewHolder = (GenderCellViewHolder) holder;
-
-                genderViewHolder.cell_image.setImageResource(mTableViewModel.getDrawable((int)
-                        cellItemModel.getData(), true));
                 break;
             default:
                 // Get the holder to update cell item text
@@ -232,6 +221,48 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
         rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderItemModel.getData()));
     }
 
+    /**
+     * This is where you create your custom Row Header ViewHolder. This method is called when
+     * Row Header RecyclerView of the TableView needs a new RecyclerView.ViewHolder of the given
+     * type to represent an item.
+     *
+     * @param viewType : This value comes from "getRowHeaderItemViewType" method to support
+     *                 different type of viewHolder as a row Header item.
+     * @see #getRowHeaderItemViewType(int);
+     */
+    @NonNull
+    @Override
+    public AbstractViewHolder onCreateRowEndViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Get Row Header xml Layout
+        View layout = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.table_view_row_end_layout, parent, false);
+
+        // Create a Row Header ViewHolder
+        return new RowEndViewHolder(layout);
+    }
+
+    /**
+     * That is where you set Row End View Model data to your custom Row End ViewHolder. This
+     * method is Called by RowEnd RecyclerView of the TableView to display the data at the
+     * specified position. This method gives you everything you need about a row header item.
+     *
+     * @param holder             : This is one of your row header ViewHolders that was created on
+     *                           ```onCreateRowHeaderViewHolder``` method. In this example we have
+     *                           created "RowHeaderViewHolder" holder.
+     * @param rowEndItemModel : This is the row header view model located on this Y position. In
+     *                           this example, the model class is "RowHeader".
+     * @param rowPosition        : This is the Y (row) position of the row header item.
+     * @see #onCreateRowHeaderViewHolder(ViewGroup, int) ;
+     */
+    @Override
+    public void onBindRowEndViewHolder(@NonNull AbstractViewHolder holder, @Nullable RowEnd rowEndItemModel,
+                                          int rowPosition) {
+
+        // Get the holder to update row header item text
+        RowEndViewHolder rowEndViewHolder = (RowEndViewHolder) holder;
+        rowEndViewHolder.row_end_textview.setText(String.valueOf(rowEndItemModel.getData()));
+    }
+
     @NonNull
     @Override
     public View onCreateCornerView(@NonNull ViewGroup parent) {
@@ -247,6 +278,26 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
             } else {
                 Log.d("TableViewAdapter", "Order Descending");
                 TableViewAdapter.this.getTableView().sortRowHeader(SortState.DESCENDING);
+            }
+        });
+        return corner;
+    }
+
+    @NonNull
+    @Override
+    public View onCreateCornerEndView(@NonNull ViewGroup parent) {
+        // Get Corner xml layout
+        View corner = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.table_view_corner_end_layout, parent, false);
+        corner.setOnClickListener(view -> {
+            SortState sortState = TableViewAdapter.this.getTableView()
+                    .getRowEndSortingStatus();
+            if (sortState != SortState.ASCENDING) {
+                Log.d("TableViewAdapter", "Order Ascending");
+                TableViewAdapter.this.getTableView().sortRowEnd(SortState.ASCENDING);
+            } else {
+                Log.d("TableViewAdapter", "Order Descending");
+                TableViewAdapter.this.getTableView().sortRowEnd(SortState.DESCENDING);
             }
         });
         return corner;
@@ -271,6 +322,15 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
     }
 
     @Override
+    public int getRowEndItemViewType(int position) {
+        // The unique ID for this type of row end item
+        // If you have different items for Row end View by Y (Row) position,
+        // then you should fill this method to be able create different
+        // type of RowHeaderViewHolder on "onCreateRowEndViewHolder"
+        return 0;
+    }
+
+    @Override
     public int getCellItemViewType(int column) {
 
         // The unique ID for this type of cell item
@@ -280,8 +340,6 @@ public class TableViewAdapter extends AbstractTableAdapter<ColumnHeader, RowHead
         switch (column) {
             case TableViewModel.MOOD_COLUMN_INDEX:
                 return MOOD_CELL_TYPE;
-            case TableViewModel.GENDER_COLUMN_INDEX:
-                return GENDER_CELL_TYPE;
             default:
                 // Default view type
                 return 0;

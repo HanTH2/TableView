@@ -81,6 +81,9 @@ public interface ITableView {
     CellRecyclerView getRowHeaderRecyclerView();
 
     @NonNull
+    CellRecyclerView getRowEndRecyclerView();
+
+    @NonNull
     ColumnHeaderLayoutManager getColumnHeaderLayoutManager();
 
     @NonNull
@@ -88,6 +91,9 @@ public interface ITableView {
 
     @NonNull
     LinearLayoutManager getRowHeaderLayoutManager();
+
+    @NonNull
+    LinearLayoutManager getRowEndLayoutManager();
 
     @NonNull
     HorizontalRecyclerViewListener getHorizontalRecyclerViewListener();
@@ -118,6 +124,10 @@ public interface ITableView {
 
     @Nullable
     SortState getRowHeaderSortingStatus();
+
+    @Nullable
+    SortState getRowEndSortingStatus();
+
 
     void scrollToColumnPosition(int column);
 
@@ -159,13 +169,21 @@ public interface ITableView {
 
     void sortRowHeader(@NonNull SortState sortState);
 
+    void sortRowEnd(@NonNull SortState sortState);
+
     void remeasureColumnWidth(int column);
 
     int getRowHeaderWidth();
 
+    int getRowEndWidth();
+
     void setRowHeaderWidth(int rowHeaderWidth);
 
+    void setRowEndWidth(int rowHeaderWidth);
+
     boolean getShowCornerView();
+
+    boolean getShowCornerEndView();
 
     enum CornerViewLocation {
         TOP_LEFT(0),
@@ -187,11 +205,33 @@ public interface ITableView {
         }
     }
 
+    enum CornerViewEndLocation {
+        TOP_LEFT(1),
+        TOP_RIGHT(0),
+        BOTTOM_LEFT(3),
+        BOTTOM_RIGHT(2);
+        int id;
+
+        CornerViewEndLocation(int id) {
+            this.id = id;
+        }
+
+        static CornerViewEndLocation fromId(int id) {
+            for (CornerViewEndLocation c : values()) {
+                if (c.id == id) return c;
+            }
+            // If enum not found return default of Top Left
+            return TOP_RIGHT;
+        }
+    }
+
     CornerViewLocation getCornerViewLocation();
 
     void setCornerViewLocation(CornerViewLocation cornerViewLocation);
 
     int getGravity();
+
+    int getGravityEnd();
 
     boolean getReverseLayout();
 

@@ -31,12 +31,16 @@ import androidx.recyclerview.widget.DiffUtil;
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.ColumnHeaderRecyclerViewAdapter;
+import com.evrencoskun.tableview.adapter.recyclerview.RowEndRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.RowHeaderRecyclerViewAdapter;
+import com.evrencoskun.tableview.sort.ColumnForRowEndSortComparator;
 import com.evrencoskun.tableview.sort.ColumnForRowHeaderSortComparator;
 import com.evrencoskun.tableview.sort.ColumnSortCallback;
 import com.evrencoskun.tableview.sort.ColumnSortComparator;
 import com.evrencoskun.tableview.sort.ColumnSortStateChangedListener;
 import com.evrencoskun.tableview.sort.ISortableModel;
+import com.evrencoskun.tableview.sort.RowEndForCellSortComparator;
+import com.evrencoskun.tableview.sort.RowEndSortComparator;
 import com.evrencoskun.tableview.sort.RowHeaderForCellSortComparator;
 import com.evrencoskun.tableview.sort.RowHeaderSortCallback;
 import com.evrencoskun.tableview.sort.RowHeaderSortComparator;
@@ -54,6 +58,7 @@ public class ColumnSortHandler {
 
     private final CellRecyclerViewAdapter<List<ISortableModel>> mCellRecyclerViewAdapter;
     private final RowHeaderRecyclerViewAdapter<ISortableModel> mRowHeaderRecyclerViewAdapter;
+    private final RowEndRecyclerViewAdapter<ISortableModel> mRowEndRecyclerViewAdapter;
     private final ColumnHeaderRecyclerViewAdapter mColumnHeaderRecyclerViewAdapter;
 
     private List<ColumnSortStateChangedListener> columnSortStateChangedListeners = new ArrayList<>();
@@ -73,6 +78,9 @@ public class ColumnSortHandler {
 
         this.mRowHeaderRecyclerViewAdapter = (RowHeaderRecyclerViewAdapter<ISortableModel>) tableView
                 .getRowHeaderRecyclerView().getAdapter();
+
+        this.mRowEndRecyclerViewAdapter = (RowEndRecyclerViewAdapter<ISortableModel>) tableView
+                .getRowEndRecyclerView().getAdapter();
 
         this.mColumnHeaderRecyclerViewAdapter = (ColumnHeaderRecyclerViewAdapter) tableView
                 .getColumnHeaderRecyclerView().getAdapter();
@@ -105,6 +113,33 @@ public class ColumnSortHandler {
         swapItems(originalRowHeaderList, sortedRowHeaderList, sortedList, sortState);
     }
 
+    public void sortByRowEnd(@NonNull final SortState sortState) {
+        List<ISortableModel> originalRowEndList = mRowEndRecyclerViewAdapter.getItems();
+        List<ISortableModel> sortedRowEndList = new ArrayList<>(originalRowEndList);
+
+        List<List<ISortableModel>> originalList = mCellRecyclerViewAdapter.getItems();
+        List<List<ISortableModel>> sortedList = new ArrayList<>(originalList);
+
+        if (sortState != SortState.UNSORTED) {
+            // Do descending / ascending sort
+            Collections.sort(sortedRowEndList, new RowEndSortComparator(sortState));
+
+            // Sorting Columns/Cells using the same logic has sorting DataSet
+            RowEndForCellSortComparator rowEndForCellSortComparator
+                    = new RowEndForCellSortComparator(
+                    originalRowEndList,
+                    originalList,
+                    sortState);
+
+            Collections.sort(sortedList, rowEndForCellSortComparator);
+        }
+
+        mRowEndRecyclerViewAdapter.getRowEndSortHelper().setSortingStatus(sortState);
+
+        // Set sorted data list
+        swapItems(originalRowEndList, sortedRowEndList, sortedList, sortState);
+    }
+
     public void sort(int column, @NonNull SortState sortState) {
         List<List<ISortableModel>> originalList = mCellRecyclerViewAdapter.getItems();
         List<List<ISortableModel>> sortedList = new ArrayList<>(originalList);
@@ -113,6 +148,11 @@ public class ColumnSortHandler {
                 = mRowHeaderRecyclerViewAdapter.getItems();
         List<ISortableModel> sortedRowHeaderList
                 = new ArrayList<>(originalRowHeaderList);
+
+        List<ISortableModel> originalRowEndList
+                = mRowEndRecyclerViewAdapter.getItems();
+        List<ISortableModel> sortedRowEndList
+                = new ArrayList<>(originalRowEndList);
 
         if (sortState != SortState.UNSORTED) {
             // Do descending / ascending sort
@@ -127,13 +167,23 @@ public class ColumnSortHandler {
                     sortState);
 
             Collections.sort(sortedRowHeaderList, columnForRowHeaderSortComparator);
+
+            // Sorting RowEnd using the same logic has sorting DataSet
+            ColumnForRowEndSortComparator columnForRowEndSortComparator
+                    = new ColumnForRowEndSortComparator(
+                    originalRowEndList,
+                    originalList,
+                    column,
+                    sortState);
+
+            Collections.sort(sortedRowEndList, columnForRowEndSortComparator);
         }
 
         // Update sorting list of column headers
         mColumnHeaderRecyclerViewAdapter.getColumnSortHelper().setSortingStatus(column, sortState);
 
         // Set sorted data list
-        swapItems(originalList, sortedList, column, sortedRowHeaderList, sortState);
+        swapItems(originalList, sortedList, column, sortedRowHeaderList, sortedRowEndList, sortState);
     }
 
     private void swapItems(@NonNull List<ISortableModel> oldRowHeader,
@@ -161,7 +211,7 @@ public class ColumnSortHandler {
     }
 
     private void swapItems(@NonNull List<List<ISortableModel>> oldItems, @NonNull List<List<ISortableModel>>
-            newItems, int column, @NonNull List<ISortableModel> newRowHeader, @NonNull SortState sortState) {
+            newItems, int column, @NonNull List<ISortableModel> newRowHeader,  @NonNull List<ISortableModel> newRowEnd, @NonNull SortState sortState) {
 
         // Set new items without calling notifyCellDataSetChanged method of CellRecyclerViewAdapter
         mCellRecyclerViewAdapter.setItems(newItems, !mEnableAnimation);
@@ -208,6 +258,12 @@ public class ColumnSortHandler {
     public SortState getRowHeaderSortingStatus() {
         return mRowHeaderRecyclerViewAdapter.getRowHeaderSortHelper().getSortingStatus();
     }
+
+    @Nullable
+    public SortState getRowEndSortingStatus() {
+        return mRowEndRecyclerViewAdapter.getRowEndSortHelper().getSortingStatus();
+    }
+
 
     /**
      * Sets the listener for the changes in column sorting.

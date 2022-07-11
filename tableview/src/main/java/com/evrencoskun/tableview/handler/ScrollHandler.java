@@ -47,12 +47,15 @@ public class ScrollHandler {
     @NonNull
     private final LinearLayoutManager mRowHeaderLayoutManager;
     @NonNull
+    private final LinearLayoutManager mRowEndLayoutManager;
+    @NonNull
     private final ColumnHeaderLayoutManager mColumnHeaderLayoutManager;
 
     public ScrollHandler(@NonNull ITableView tableView) {
         this.mTableView = tableView;
         this.mCellLayoutManager = tableView.getCellLayoutManager();
         this.mRowHeaderLayoutManager = tableView.getRowHeaderLayoutManager();
+        this.mRowEndLayoutManager = tableView.getRowEndLayoutManager();
         this.mColumnHeaderLayoutManager = tableView.getColumnHeaderLayoutManager();
     }
 
@@ -84,11 +87,13 @@ public class ScrollHandler {
     public void scrollToRowPosition(int rowPosition) {
         mRowHeaderLayoutManager.scrollToPosition(rowPosition);
         mCellLayoutManager.scrollToPosition(rowPosition);
+        mRowEndLayoutManager.scrollToPosition(rowPosition);
     }
 
     public void scrollToRowPosition(int rowPosition, int offset) {
         mRowHeaderLayoutManager.scrollToPositionWithOffset(rowPosition, offset);
         mCellLayoutManager.scrollToPositionWithOffset(rowPosition, offset);
+        mRowEndLayoutManager.scrollToPositionWithOffset(rowPosition, offset);
     }
 
     private void scrollCellHorizontally(int columnPosition, int offset) {

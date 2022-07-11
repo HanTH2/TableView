@@ -129,7 +129,7 @@ public class MainFragment extends Fragment {
 
         // Load the dummy data to the TableView
         tableViewAdapter.setAllItems(tableViewModel.getColumnHeaderList(), tableViewModel
-                .getRowHeaderList(), tableViewModel.getCellList());
+                .getRowHeaderList(), tableViewModel.getRowEndList(), tableViewModel.getCellList());
 
         //mTableView.setHasFixedWidth(true);
 
@@ -159,14 +159,6 @@ public class MainFragment extends Fragment {
         // In the example data, this will filter the mood column.
         if (mTableFilter != null) {
             mTableFilter.set(TableViewModel.MOOD_COLUMN_INDEX, filter);
-        }
-    }
-
-    public void filterTableForGender(@NonNull String filter) {
-        // Sets a filter to the table, this will only filter a specific column.
-        // In the example data, this will filter the gender column.
-        if (mTableFilter != null) {
-            mTableFilter.set(TableViewModel.GENDER_COLUMN_INDEX, filter);
         }
     }
 
@@ -239,8 +231,6 @@ public class MainFragment extends Fragment {
 
                 if (parent == moodFilter) {
                     filterTableForMood(filter);
-                } else if (parent == genderFilter) {
-                    filterTableForGender(filter);
                 }
             }
         }

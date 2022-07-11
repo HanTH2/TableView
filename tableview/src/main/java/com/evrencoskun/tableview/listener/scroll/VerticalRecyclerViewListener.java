@@ -44,7 +44,7 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
     private static final String LOG_TAG = VerticalRecyclerViewListener.class.getSimpleName();
 
     @NonNull
-    private final CellRecyclerView mRowHeaderRecyclerView, mCellRecyclerView;
+    private final CellRecyclerView mRowHeaderRecyclerView, mRowEndRecyclerView, mCellRecyclerView;
     private RecyclerView mLastTouchedRecyclerView;
 
     // Y Position means row position
@@ -56,6 +56,7 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
 
     public VerticalRecyclerViewListener(@NonNull ITableView tableView) {
         this.mRowHeaderRecyclerView = tableView.getRowHeaderRecyclerView();
+        this.mRowEndRecyclerView = tableView.getRowEndRecyclerView();
         this.mCellRecyclerView = tableView.getCellRecyclerView();
     }
 
@@ -116,6 +117,8 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
                     Log.d(LOG_TAG, "mCellRecyclerView scroll listener added");
                 } else if (rv == mRowHeaderRecyclerView) {
                     Log.d(LOG_TAG, "mRowHeaderRecyclerView scroll listener added");
+                } else if (rv == mRowEndRecyclerView) {
+                    Log.d(LOG_TAG, "mRowEndRecyclerView scroll listener added");
                 }
 
                 // Refresh the value;
@@ -145,6 +148,8 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
                     Log.d(LOG_TAG, "mCellRecyclerView scroll listener removed from up ");
                 } else if (rv == mRowHeaderRecyclerView) {
                     Log.d(LOG_TAG, "mRowHeaderRecyclerView scroll listener removed from up");
+                } else if (rv == mRowEndRecyclerView) {
+                    Log.d(LOG_TAG, "mRowEndRecyclerView scroll listener removed from up");
                 }
             }
 
@@ -177,6 +182,10 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
             super.onScrolled(recyclerView, dx, dy);
 
             mCellRecyclerView.scrollBy(0, dy);
+        } else if (recyclerView == mRowEndRecyclerView) {
+            super.onScrolled(recyclerView, dx, dy);
+
+            mCellRecyclerView.scrollBy(0, dy);
         }
     }
 
@@ -193,6 +202,9 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
                         "onScrollStateChanged");
             } else if (recyclerView == mRowHeaderRecyclerView) {
                 Log.d(LOG_TAG, "mRowHeaderRecyclerView scroll listener removed from " +
+                        "onScrollStateChanged");
+            } else if (recyclerView == mRowEndRecyclerView) {
+                Log.d(LOG_TAG, "mRowEndRecyclerView scroll listener removed from " +
                         "onScrollStateChanged");
             }
         }
@@ -216,6 +228,8 @@ public class VerticalRecyclerViewListener extends RecyclerView.OnScrollListener 
         } else {
             mRowHeaderRecyclerView.removeOnScrollListener(this);
             mRowHeaderRecyclerView.stopScroll();
+            mRowEndRecyclerView.removeOnScrollListener(this);
+            mRowEndRecyclerView.stopScroll();
             Log.d(LOG_TAG, "mRowHeaderRecyclerView scroll listener removed from last touched");
             if (isNeeded) {
                 mCellRecyclerView.removeOnScrollListener(this);

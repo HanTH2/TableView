@@ -34,6 +34,7 @@ import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.evrencoskun.tableviewsample.tableview.holder.ColumnHeaderViewHolder;
 import com.evrencoskun.tableviewsample.tableview.popup.ColumnHeaderLongPressPopup;
+import com.evrencoskun.tableviewsample.tableview.popup.RowEndLongPressPopup;
 import com.evrencoskun.tableviewsample.tableview.popup.RowHeaderLongPressPopup;
 
 /**
@@ -172,6 +173,45 @@ public class TableViewListener implements ITableViewListener {
 
         // Create Long Press Popup
         RowHeaderLongPressPopup popup = new RowHeaderLongPressPopup(rowHeaderView, mTableView);
+        // Show
+        popup.show();
+    }
+
+    /**
+     * Called when user click any Row Header item.
+     *
+     * @param rowHeaderView : Clicked Row Header ViewHolder.
+     * @param row           : Y (Row) position of Clicked Row Header item.
+     */
+    @Override
+    public void onRowEndClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
+        // Do whatever you want.
+        showToast("Row end " + row + " has been clicked.");
+    }
+
+    /**
+     * Called when user double click any Row Header item.
+     *
+     * @param rowHeaderView : Clicked Row Header ViewHolder.
+     * @param row           : Y (Row) position of Clicked Row Header item.
+     */
+    @Override
+    public void onRowEndDoubleClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int row) {
+        // Do whatever you want.
+        showToast("Row End " + row + " has been double clicked.");
+    }
+
+    /**
+     * Called when user long press any row header item.
+     *
+     * @param rowHeaderView : Long Pressed Row Header ViewHolder.
+     * @param row           : Y (Row) position of Long Pressed Row Header item.
+     */
+    @Override
+    public void onRowEndLongPressed(@NonNull RecyclerView.ViewHolder rowEndView, int row) {
+
+        // Create Long Press Popup
+        RowEndLongPressPopup popup = new RowEndLongPressPopup(rowEndView, mTableView);
         // Show
         popup.show();
     }

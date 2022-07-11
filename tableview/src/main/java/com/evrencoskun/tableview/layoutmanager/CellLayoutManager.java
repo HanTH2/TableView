@@ -58,6 +58,9 @@ public class CellLayoutManager extends LinearLayoutManager {
     @NonNull
     private final CellRecyclerView mRowHeaderRecyclerView;
 
+    @NonNull
+    private final CellRecyclerView mRowEndRecyclerView;
+
     private HorizontalRecyclerViewListener mHorizontalListener;
     @NonNull
     private final ITableView mTableView;
@@ -75,6 +78,7 @@ public class CellLayoutManager extends LinearLayoutManager {
         this.mTableView = tableView;
         this.mColumnHeaderLayoutManager = tableView.getColumnHeaderLayoutManager();
         this.mRowHeaderRecyclerView = tableView.getRowHeaderRecyclerView();
+        this.mRowEndRecyclerView = tableView.getRowEndRecyclerView();
 
         initialize();
     }
@@ -103,6 +107,13 @@ public class CellLayoutManager extends LinearLayoutManager {
             // Because it is one of the main compared criterion to make each columns fit.
             mRowHeaderRecyclerView.scrollBy(0, dy);
         }
+        if (mRowEndRecyclerView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE &&
+                !mRowEndRecyclerView.isScrollOthers()) {
+            // CellRecyclerViews should be scrolled after the RowEndRecyclerView.
+            // Because it is one of the main compared criterion to make each columns fit.
+            mRowEndRecyclerView.scrollBy(0, dy);
+        }
+
 
         int scroll = super.scrollVerticallyBy(dy, recycler, state);
 
@@ -509,6 +520,10 @@ public class CellLayoutManager extends LinearLayoutManager {
             // set cache width for single cell item.
             setCacheWidth(i, column, width);
         }
+//        for (int i = 0; i < mRowEndRecyclerView.getAdapter().getItemCount(); i++) {
+//            // set cache width for single cell item.
+//            setCacheWidth(i, column, width);
+//        }
     }
 
     public int getCacheWidth(int row, int column) {

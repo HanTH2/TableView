@@ -22,30 +22,17 @@
  * SOFTWARE.
  */
 
-package com.evrencoskun.tableviewsample.tableview.holder;
-
-import android.view.View;
+package com.evrencoskun.tableviewsample.tableview.model;
 
 import androidx.annotation.NonNull;
-
-import com.evrencoskun.tableviewsample.R;
-import com.evrencoskun.tableviewsample.tableview.TableViewModel;
+import androidx.annotation.Nullable;
 
 /**
- * Created by evrencoskun on 4.02.2018.
+ * Created by evrencoskun on 11/06/2017.
  */
 
-public class GenderCellViewHolder extends MoodCellViewHolder {
-
-    public GenderCellViewHolder(@NonNull View itemView) {
-        super(itemView);
-    }
-
-    @Override
-    public void setData(Object data) {
-        int gender = (int) data;
-        int genderDrawable = gender == TableViewModel.BOY ? R.drawable.ic_male : R.drawable.ic_female;
-
-        cell_image.setImageResource(genderDrawable);
+public class RowEnd extends Cell {
+    public RowEnd(@NonNull String id, @Nullable String data) {
+        super(id, data);
     }
 }
