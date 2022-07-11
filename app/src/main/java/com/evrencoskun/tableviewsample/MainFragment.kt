@@ -2,11 +2,13 @@ package com.evrencoskun.tableviewsample
 
 import android.os.Bundle
 import android.view.View
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.evrencoskun.tableview.TableView
 import com.evrencoskun.tableviewsample.tableview.TableViewAdapter
 import com.evrencoskun.tableviewsample.tableview.TableViewListener
 import com.evrencoskun.tableviewsample.tableview.TableViewModel
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 
 /**
@@ -17,6 +19,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         // Let's get TableView
         mTableView = view.findViewById(R.id.tableview)
+        val sheetContent = view.findViewById<LinearLayout>(R.id.sheet_container)
+        BottomSheetBehavior.from(sheetContent)
+
         initializeTableView()
     }
 
