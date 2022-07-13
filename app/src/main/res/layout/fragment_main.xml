@@ -4,15 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:text="Tran Hong Han"
-        android:layout_gravity="center"
-        android:layout_marginBottom="400dp"
-        android:gravity="center"/>
-
     <LinearLayout
+        android:id="@+id/llContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="400dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:text="Tran Hong Han"
+            android:layout_gravity="center"
+            android:gravity="center"/>
+    </LinearLayout>
+
+    <FrameLayout
         android:id="@+id/sheet_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,19 +28,27 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@android:color/holo_blue_bright"/>
-
-        <com.evrencoskun.tableview.TableView
-            android:id="@+id/tableview"
-            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:nestedScrollingEnabled="true"
-            app:allow_click_inside_cell="true"
-            app:allow_click_inside_column_header="true"
-            app:allow_click_inside_row_header="true"
-            app:allow_click_inside_row_end="true"/>
-    </LinearLayout>
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@android:color/holo_blue_bright"/>
+
+            <com.evrencoskun.tableview.TableView
+                android:id="@+id/tableview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:nestedScrollingEnabled="true"
+                android:clipToPadding="true"
+                app:allow_click_inside_cell="true"
+                app:allow_click_inside_column_header="true"
+                app:allow_click_inside_row_header="true"
+                app:allow_click_inside_row_end="true"/>
+        </LinearLayout>
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

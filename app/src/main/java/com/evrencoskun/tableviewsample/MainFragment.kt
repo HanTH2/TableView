@@ -1,7 +1,10 @@
 package com.evrencoskun.tableviewsample
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.evrencoskun.tableview.TableView
@@ -16,13 +19,59 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
  */
 class MainFragment : Fragment(R.layout.fragment_main) {
     private var mTableView: TableView? = null
+    private var mllContent: LinearLayout? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         // Let's get TableView
         mTableView = view.findViewById(R.id.tableview)
-        val sheetContent = view.findViewById<LinearLayout>(R.id.sheet_container)
-        BottomSheetBehavior.from(sheetContent)
+        mllContent = view.findViewById(R.id.llContent)
+
+        initBottomSheet(view)
 
         initializeTableView()
+    }
+
+    private fun initBottomSheet(view: View) {
+        val sheetContent = view.findViewById<FrameLayout>(R.id.sheet_container)
+        val bottomSheetBehavior = BottomSheetBehavior.from(sheetContent)
+
+        // set callback for changes
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_HIDDEN -> {
+                        mTableView?.clipToPadding = true
+                    }
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        mTableView?.setPadding(0, 0, 0, 0)
+                        mTableView?.clipToPadding = true
+                    }
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        mllContent?.height?.let {
+                            mTableView?.setPadding(0, 0, 0, it + 30)
+                            mTableView?.clipToPadding = true
+                        }
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> {
+                        mTableView?.setPadding(0, 0, 0, 0)
+                        mTableView?.clipToPadding = true
+                    }
+                    BottomSheetBehavior.STATE_SETTLING -> {
+
+                    }
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                        mTableView?.clipToPadding = true
+                    }
+                }
+            }
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
+        })
+        view.post {
+            mllContent?.height?.let {
+                mTableView?.setPadding(0, 0, 0, it + 30)
+                mTableView?.clipToPadding = true
+            }
+        }
     }
 
     private fun initializeTableView() {

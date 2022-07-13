@@ -363,7 +363,7 @@ public class TableView extends FrameLayout implements ITableView {
 
         if (isShowHorizontalSeparators()) {
             // Add vertical item decoration to display column line
-            recyclerView.addItemDecoration(getHorizontalItemDecoration());
+//            recyclerView.addItemDecoration(getHorizontalItemDecoration());
         }
 
         return recyclerView;
