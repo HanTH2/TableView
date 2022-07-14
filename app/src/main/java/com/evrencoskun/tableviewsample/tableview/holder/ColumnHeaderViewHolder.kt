@@ -32,7 +32,7 @@ class ColumnHeaderViewHolder(itemView: View, private val tableView: ITableView?)
 
         // It is necessary to remeasure itself.
         column_header_container.layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
-        column_header_textview.requestLayout()
+        column_header_container.requestLayout()
     }
 
     private val mSortButtonClickListener = View.OnClickListener {
